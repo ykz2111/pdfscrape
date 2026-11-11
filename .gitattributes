@@ -1,0 +1,10 @@
+# Auto detect text files and normalize line endings to LF
+* text=auto
+
+# Python
+*.py text eol=lf
+*.pyi text eol=lf
+
+# Shell
+*.sh text eol=lf
+*.bash text eol=lf
