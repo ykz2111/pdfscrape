@@ -71,6 +71,37 @@ These were each found by testing against real CLIs. They still apply.
 5. Add the sign-in command to the `hints` dict in `cli/commands.py`.
 6. Add the name to `PROVIDERS` in `plugins/pdfscrape.js`.
 
+## The macOS terminal
+
+`pdfscrape.mac` at the repo root is the one command a person runs on a Mac
+Terminal: it creates the venv if missing, installs the package, reports the
+sign-in status, and starts the interactive chat.
+
+```
+./pdfscrape.mac              build, report sign-in status, start the chat
+./pdfscrape.mac status       build and report sign-in status only
+./pdfscrape.mac ask "..."    ask one question and exit
+./pdfscrape.mac app          build the double-clickable .app bundle
+./pdfscrape.mac install      copy the .app into /Applications
+```
+
+The pieces behind it:
+
+- `pdfscrape/terminal.py` — the REPL. Colour is decoration only; every status
+  is also spelled out in words so the output survives being piped or read by
+  someone who cannot see colour.
+- `pdfscrape/macos.py` — builds `dist/pdfscrape.app`. The launcher is a shell
+  script embedded in a Python string, so **it is not a format string**: use
+  `str.replace`, never `str.format`. Shell braces break `.format`. The same
+  applies to the AppleScript: pass the command as an argv element to
+  `osascript` rather than pasting it into the source, so no escaping is
+  needed.
+- `pdfscrape/mac.py` — the Python entry point behind the shell wrapper.
+
+Entry points are declared in `pyproject.toml`: `pdfscrape`,
+`pdfscrape-terminal`, and `pdfscrape-mac`. Adding one means adding a console
+script there and reinstalling with `pip install -e .`.
+
 ## The OpenCode plugin
 
 `plugins/pdfscrape.js` is installed at

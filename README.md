@@ -81,6 +81,58 @@ chat:
 Override per call with `-m/--model`, or per shell with
 `PDFSCRAPE_<PROVIDER>_MODEL`.
 
+## macOS Terminal
+
+One command builds, authenticates, and starts the chat:
+
+```bash
+./pdfscrape.mac
+```
+
+It creates the venv on first run, installs the package, prints who is signed
+in (with the command to fix anyone who is not), then drops into the chat.
+
+```
+./pdfscrape.mac              build, report sign-in status, start the chat
+./pdfscrape.mac status       build and report sign-in status only
+./pdfscrape.mac ask "..."    ask one question and exit
+./pdfscrape.mac app          build the double-clickable .app bundle
+./pdfscrape.mac install      copy the .app into /Applications
+```
+
+### Interactive chat
+
+```
+[all] › what does this repo do?
+```
+
+Slash commands:
+
+| Command | Purpose |
+|---|---|
+| `/help` | list the commands |
+| `/status` | provider sign-in status |
+| `/providers` | list providers and their models |
+| `/login [provider]` | how to sign in |
+| `/use <provider>` | send to one provider (`auto` for all) |
+| `/model <provider> <model>` | set a provider's model |
+| `/clear` | clear the screen |
+| `/history` | recent prompts |
+| `/quit` | exit |
+
+The same chat is also available as `pdfscrape terminal`, `pdfscrape-terminal`,
+or `python -m pdfscrape.terminal`.
+
+### Double-clickable app
+
+```bash
+./pdfscrape.mac app        # creates dist/pdfscrape.app
+./pdfscrape.mac install    # copies it to /Applications
+```
+
+The app opens a Terminal window running the chat, creating the venv on first
+launch if it is missing.
+
 ## OpenCode plugin
 
 `plugins/pdfscrape.js` exposes the providers as OpenCode tools, so any
@@ -106,10 +158,13 @@ provider calls, so the OAuth handling lives in one place. It finds the CLI via
 
 ```
 pdfscrape/
-├── cli/          command definitions (init, chat, login, providers)
+├── cli/          command definitions (init, chat, login, providers, terminal)
 ├── providers/    one module per provider; all delegate to a signed-in CLI
 ├── chat/         orchestration: single, multi, and auto routing
 ├── config/       YAML config with env overrides
+├── terminal.py   interactive REPL for macOS Terminal
+├── macos.py      .app bundle builder
+├── mac.py        one-command build + auth + chat entry point
 └── plugins/      OpenCode plugin exposing the providers as tools
 ```
 

@@ -105,6 +105,16 @@ def providers():
 
 
 @click.command()
+@click.option("--provider", "-p", default=None, help="Start on one provider.")
+@click.option("--question", "-q", default=None, help="Ask one question and exit.")
+def terminal(provider, question):
+    """Open the interactive terminal chat."""
+    from pdfscrape.terminal import run_terminal
+
+    raise SystemExit(run_terminal(provider=provider, question=question))
+
+
+@click.command()
 @click.option("--provider", "-p", default=None, help="Provider to sign in.")
 @click.option("--all", "all_providers_flag", is_flag=True, help="Every provider.")
 def login(provider, all_providers_flag):

@@ -1,0 +1,74 @@
+#!/bin/bash
+#
+# pdfscrape — one command to build, authenticate, and chat.
+#
+#   ./pdfscrape.mac              build, report sign-in status, start the chat
+#   ./pdfscrape.mac status       build and report sign-in status only
+#   ./pdfscrape.mac app          build the double-clickable .app bundle
+#   ./pdfscrape.mac install      copy the .app into /Applications
+#   ./pdfscrape.mac ask "..."    ask one question and exit
+#
+# Run this from the repo. It creates the venv on first run, installs the
+# package, then hands over to the interactive chat.
+
+set -uo pipefail
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV="$REPO/.venv"
+PY="$VENV/bin/python"
+
+ensure_ready() {
+  if [ ! -x "$PY" ]; then
+    echo "Building pdfscrape (first run)..."
+    python3 -m venv "$VENV" || {
+      echo "Could not create a virtual environment. Is python3 installed?" >&2
+      exit 1
+    }
+    "$VENV/bin/pip" install --upgrade pip >/dev/null 2>&1
+  fi
+
+  if ! "$PY" -c "import pdfscrape" >/dev/null 2>&1; then
+    echo "Installing pdfscrape..."
+    "$VENV/bin/pip" install -e "$REPO" >/dev/null 2>&1 || {
+      echo "Could not install pdfscrape." >&2
+      exit 1
+    }
+  fi
+}
+
+CMD="${1:-chat}"
+shift || true
+
+case "$CMD" in
+  app)
+    ensure_ready
+    "$PY" -m pdfscrape.macos build
+    ;;
+  install)
+    ensure_ready
+    "$PY" -m pdfscrape.macos install
+    ;;
+  open)
+    ensure_ready
+    "$PY" -m pdfscrape.macos open
+    ;;
+  status)
+    ensure_ready
+    exec "$PY" -m pdfscrape.mac --no-build --status
+    ;;
+  ask)
+    ensure_ready
+    exec "$PY" -m pdfscrape.mac --no-build --question "$*"
+    ;;
+  chat)
+    ensure_ready
+    exec "$PY" -m pdfscrape.mac --no-build
+    ;;
+  -h|--help|help)
+    sed -n '3,13p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+    ;;
+  *)
+    ensure_ready
+    exec "$PY" -m pdfscrape.mac --no-build "$@"
+    ;;
+esac

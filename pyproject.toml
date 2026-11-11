@@ -23,6 +23,8 @@ dev = [
 
 [project.scripts]
 pdfscrape = "pdfscrape.cli:main"
+pdfscrape-terminal = "pdfscrape.terminal:run_terminal"
+pdfscrape-mac = "pdfscrape.mac:main"
 
 [tool.setuptools]
 packages = ["pdfscrape", "pdfscrape.cli", "pdfscrape.chat", "pdfscrape.config", "pdfscrape.providers"]

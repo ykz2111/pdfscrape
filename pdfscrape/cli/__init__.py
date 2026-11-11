@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import click
 
-from pdfscrape.cli.commands import chat, init, login, providers
+from pdfscrape.cli.commands import chat, init, login, providers, terminal
 
 
 @click.group()
@@ -22,6 +22,7 @@ main.add_command(init)
 main.add_command(chat)
 main.add_command(login)
 main.add_command(providers)
+main.add_command(terminal)
 
 
 if __name__ == "__main__":
