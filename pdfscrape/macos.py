@@ -119,13 +119,45 @@ def build_app(output: Path | None = None) -> Path:
 
 
 def _write_icon(target: Path) -> None:
-    """Give the app an icon, falling back to the system one."""
+    """Give the app an icon.
+
+    On macOS the system icon is reused. Elsewhere a minimal valid .icns is
+    written so the bundle is always structurally complete, even though only
+    macOS renders it.
+    """
     system_icon = Path(
         "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/"
         "GenericApplicationIcon.icns"
     )
     if system_icon.exists():
         shutil.copyfile(system_icon, target)
+        return
+
+    _write_minimal_icns(target)
+
+
+def _write_minimal_icns(target: Path) -> None:
+    """Write a minimal but valid .icns file.
+
+    An .icns is the magic 'icns', a total length, then typed entries. One
+    PNG entry is enough to make the file well formed.
+    """
+    png = _ONE_PIXEL_PNG
+
+    entry_type = b"ic07"
+    entry = entry_type + len(png).to_bytes(4, "big") + png
+    body = entry
+    header = b"icns" + (len(body) + 8).to_bytes(4, "big")
+
+    target.write_bytes(header + body)
+
+
+# The smallest valid PNG: one transparent pixel.
+_ONE_PIXEL_PNG = bytes.fromhex(
+    "89504e470d0a1a0a0000000d494844520000000100000001080600000"
+    "01f15c4890000000d4944415478da63f8cfc0000003010100"
+    "18dd8db00000000049454e44ae426082"
+)
 
 
 def install_app(app: Path | None = None) -> Path:
