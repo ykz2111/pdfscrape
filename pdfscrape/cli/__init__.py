@@ -1,19 +1,27 @@
-"""CLI entrypoint and command routing."""
+"""CLI entrypoint."""
+
+from __future__ import annotations
 
 import click
-from pdfscrape.cli.commands import chat, init, config
+
+from pdfscrape.cli.commands import chat, init, login, providers
 
 
 @click.group()
-@click.version_option()
-def main():
-    """pdfscrape - Orchestrate multiple AI models and chat platforms."""
+@click.version_option(package_name="pdfscrape")
+def main() -> None:
+    """pdfscrape - one CLI for every AI provider you are signed in to.
+
+    Every provider is reached through its own CLI, which holds the OAuth
+    session. pdfscrape never stores or sends an API key.
+    """
     pass
 
 
 main.add_command(init)
 main.add_command(chat)
-main.add_command(config)
+main.add_command(login)
+main.add_command(providers)
 
 
 if __name__ == "__main__":

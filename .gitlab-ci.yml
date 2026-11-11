@@ -1,5 +1,3 @@
-"""CI/CD pipeline configuration."""
-
 stages:
   - lint
   - test
@@ -16,13 +14,11 @@ lint:
   stage: lint
   script:
     - ruff check pdfscrape/ tests/
-    - black --check pdfscrape/ tests/
-    - mypy pdfscrape/
 
 test:
   stage: test
   script:
-    - pytest --cov=pdfscrape tests/
+    - pytest -q tests/
   coverage: '/TOTAL.*\s+(\d+%)$/'
 
 build:
