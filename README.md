@@ -1,13 +1,30 @@
 # pdfscrape
 
-A project compatible with both GitHub and GitLab.
+A unified CLI that orchestrates multiple AI models and chat platforms:
+- **GitHub Copilot** (code completion)
+- **Claude** (reasoning, code generation)
+- **Gemini** (multimodal)
+- **Antigravity** (second opinions)
+- **GitLab Chat** (team integration)
+- **Ollama** (local models)
 
-## Getting Started
+Claude Code / Hermes-inspired architecture for seamless multi-AI workflows.
+
+## Quick Start
 
 ```bash
-git clone <repository-url>
-cd pdfscrape
+pip install -e .
+pdfscrape init
+pdfscrape chat "What's in this codebase?"
 ```
+
+## Architecture
+
+- `pdfscrape/cli/` - CLI commands and entrypoints
+- `pdfscrape/providers/` - AI provider integrations
+- `pdfscrape/chat/` - Chat and conversation management
+- `pdfscrape/config/` - Configuration loading
+- `tests/` - Unit and integration tests
 
 ## License
 

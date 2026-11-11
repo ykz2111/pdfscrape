@@ -1,0 +1,35 @@
+"""CI/CD pipeline configuration."""
+
+stages:
+  - lint
+  - test
+  - build
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+before_script:
+  - pip install --upgrade pip
+  - pip install -e ".[dev]"
+
+lint:
+  stage: lint
+  script:
+    - ruff check pdfscrape/ tests/
+    - black --check pdfscrape/ tests/
+    - mypy pdfscrape/
+
+test:
+  stage: test
+  script:
+    - pytest --cov=pdfscrape tests/
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+
+build:
+  stage: build
+  script:
+    - pip install build
+    - python -m build
+  artifacts:
+    paths:
+      - dist/
