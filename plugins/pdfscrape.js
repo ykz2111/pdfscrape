@@ -130,19 +130,61 @@ function parseJsonOutput(text) {
   }
 }
 
+/** Wrap text in a fenced code block so output/errors stay readable. */
+function codeBlock(text, lang = "") {
+  return `\`\`\`${lang}\n${text}\`\`\``
+}
+
+/** Escape backticks so provider/model names can't break a markdown heading. */
+function escapeHeading(text) {
+  return String(text).replace(/`/g, "\\`")
+}
+
+/**
+ * Format provider results as accessible markdown.
+ *
+ * Uses real headings (navigable by screen readers), explicit "Status: ..."
+ * lines (meaning is not carried by color or emoji alone), and fenced code
+ * blocks for output and errors.
+ */
 function formatResults(results) {
+  const total = results.length
+  const succeeded = results.filter((r) => r.ok).length
+  const failed = total - succeeded
+
   const lines = []
-  for (const result of results) {
-    const provider = result.provider || "unknown"
+  lines.push("# pdfscrape results")
+  lines.push("")
+  lines.push(
+    `Providers: ${total}. Succeeded: ${succeeded}. Failed: ${failed}.`,
+  )
+  lines.push("")
+
+  for (const [index, result] of results.entries()) {
+    if (index > 0) {
+      lines.push("---")
+      lines.push("")
+    }
+    const provider = escapeHeading(result.provider || "unknown")
+    const model = result.model ? ` (model: ${escapeHeading(result.model)})` : ""
+    lines.push(`## ${provider}${model}`)
+    lines.push("")
     if (result.ok) {
-      lines.push(`=== ${provider}${result.model ? ` (${result.model})` : ""} ===`)
-      lines.push(result.output || "(no output)")
+      lines.push("Status: succeeded")
+      lines.push("")
+      lines.push("Output:")
+      lines.push("")
+      lines.push(codeBlock(result.output || "(no output)"))
     } else {
-      lines.push(`=== ${provider} FAILED ===`)
-      lines.push(result.error || "unknown error")
+      lines.push("Status: failed")
+      lines.push("")
+      lines.push("Error:")
+      lines.push("")
+      lines.push(codeBlock(result.error || "unknown error"))
     }
     lines.push("")
   }
+
   return lines.join("\n").trim()
 }
 
@@ -196,17 +238,17 @@ const setup = async (ctx) => {
     editor.namespace({
       name: "pdfscrape",
       description:
-        "Ask the AI providers already signed in on this machine. Each provider " +
-        "authenticates through its own CLI (Codex, Claude, Antigravity, " +
-        "Copilot, GitLab, Ollama). No API keys are involved.",
+        "Ask the AI providers already signed in on this machine. " +
+        "Each provider authenticates through its own CLI (Codex, Claude, " +
+        "Antigravity, Copilot, GitLab, Ollama). No API keys are involved.",
     })
 
     editor.add({
       name: "ask",
       description:
-        "Ask one AI provider a question and get its answer. Use this for a " +
-        "second opinion, a review by a different model, or to reach a " +
-        "provider you are not currently using. " +
+        "Ask one AI provider a question and return its answer. " +
+        "Use this for a second opinion, a review by a different model, or to " +
+        "reach a provider you are not currently using. " +
         `Providers: ${PROVIDERS.join(", ")}.`,
       input: {
         type: "object",
@@ -218,7 +260,7 @@ const setup = async (ctx) => {
           },
           prompt: {
             type: "string",
-            description: "The question or instruction to send.",
+            description: "The question or instruction to send to the provider.",
           },
           model: {
             type: "string",
@@ -247,8 +289,8 @@ const setup = async (ctx) => {
       name: "ask_all",
       description:
         "Ask every AI provider that is currently signed in and return each " +
-        "answer. Use this for a quick consensus check or to compare answers " +
-        "across models.",
+        "answer, one section per provider. Use this for a quick consensus " +
+        "check or to compare answers across models.",
       input: {
         type: "object",
         properties: {
@@ -297,7 +339,7 @@ const setup = async (ctx) => {
         if (!body) {
           throw new Error(`pdfscrape init produced no output (exit code ${code}).`)
         }
-        return { content: body }
+        return { content: `# pdfscrape sign-in status\n\n${body}` }
       },
     })
   })
