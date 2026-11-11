@@ -81,6 +81,27 @@ chat:
 Override per call with `-m/--model`, or per shell with
 `PDFSCRAPE_<PROVIDER>_MODEL`.
 
+## OpenCode plugin
+
+`plugins/pdfscrape.js` exposes the providers as OpenCode tools, so any
+OpenCode session can reach the providers you are signed in to.
+
+```bash
+cp plugins/pdfscrape.js ~/.config/opencode/plugins/pdfscrape.js
+```
+
+OpenCode reloads plugins on save; use `/reload` to force it.
+
+| Tool | Purpose |
+|---|---|
+| `pdfscrape.ask(provider, prompt)` | ask one provider |
+| `pdfscrape.ask_all(prompt)` | ask every signed-in provider |
+| `pdfscrape.status()` | who is signed in, and how |
+
+The plugin shells out to the `pdfscrape` CLI rather than reimplementing
+provider calls, so the OAuth handling lives in one place. It finds the CLI via
+`PDFSCRAPE_BIN`, then the repo venv, then `PATH`.
+
 ## Layout
 
 ```
@@ -88,7 +109,8 @@ pdfscrape/
 ├── cli/          command definitions (init, chat, login, providers)
 ├── providers/    one module per provider; all delegate to a signed-in CLI
 ├── chat/         orchestration: single, multi, and auto routing
-└── config/       YAML config with env overrides
+├── config/       YAML config with env overrides
+└── plugins/      OpenCode plugin exposing the providers as tools
 ```
 
 ## Development

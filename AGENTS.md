@@ -8,6 +8,8 @@ Guidance for coding agents working in this repository.
 orchestration layer: **it never holds an API key**. Each provider shells out to
 a CLI that already carries the user's OAuth session.
 
+`plugins/pdfscrape.js` exposes the same providers as OpenCode tools.
+
 ## Non-negotiable design rule
 
 Do not add API-key handling, `.env` loading of provider tokens, or new
@@ -18,7 +20,8 @@ OS keychain.
 Adding a provider means adding a module under `pdfscrape/providers/` that
 implements `auth()` and `run()`, then registering it in `_FACTORIES` in
 `pdfscrape/providers/__init__.py`. Also add it to `provider_names()` so
-`pdfscrape init` reports it.
+`pdfscrape init` reports it, and to the `PROVIDERS` list in
+`plugins/pdfscrape.js` so the OpenCode tool accepts it.
 
 ## Commands
 
@@ -66,6 +69,33 @@ These were each found by testing against real CLIs. They still apply.
    problems like a missing binary.
 4. Register in `_FACTORIES` and add to `provider_names()`.
 5. Add the sign-in command to the `hints` dict in `cli/commands.py`.
+6. Add the name to `PROVIDERS` in `plugins/pdfscrape.js`.
+
+## The OpenCode plugin
+
+`plugins/pdfscrape.js` is installed at
+`~/.config/opencode/plugins/pdfscrape.js` and registers three tools:
+
+| Tool | Purpose |
+|---|---|
+| `pdfscrape.ask(provider, prompt)` | ask one provider |
+| `pdfscrape.ask_all(prompt)` | ask every signed-in provider |
+| `pdfscrape.status()` | who is signed in, and how |
+
+The plugin **shells out to this CLI** rather than reimplementing provider
+calls. Every provider quirk listed above is handled by the Python side, so
+there is one place to maintain them. Keep it that way: if you add a provider
+behaviour, change `pdfscrape/providers/`, not the plugin.
+
+The plugin resolves the CLI from `PDFSCRAPE_BIN`, then the repo venv, then
+`PATH`. When you change the install location, update `candidateBinaries()`.
+
+OpenCode's V2 plugin API expects the default export to be an object with `id`
+and `setup`, not a bare function. A callable default export fails validation
+and the plugin silently does not load.
+
+To apply plugin edits, OpenCode reloads automatically on save. Use `/reload`
+to force it.
 
 ## Testing
 
