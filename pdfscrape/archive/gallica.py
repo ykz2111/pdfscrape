@@ -38,6 +38,15 @@ class GallicaIiifAdapter:
             raise ArchiveSourceError(f"IIIF manifest at {safe_manifest_url} is not a JSON object")
         return self.record_from_manifest(payload, safe_manifest_url)
 
+    def harvest(
+        self, manifest_urls: list[str], max_records: int | None = None
+    ) -> list[ArchiveRecord]:
+        """Normalize a supplied list of Gallica IIIF manifests."""
+        if max_records is not None and max_records < 1:
+            raise ValueError("max_records must be greater than zero")
+        selected = manifest_urls if max_records is None else manifest_urls[:max_records]
+        return [self.get_record(url) for url in selected]
+
     def record_from_manifest(self, manifest: dict, manifest_url: str) -> ArchiveRecord:
         """Normalize an already-loaded IIIF Presentation manifest."""
         safe_manifest_url = canonicalize_public_url(manifest_url)

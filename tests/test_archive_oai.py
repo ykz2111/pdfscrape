@@ -106,6 +106,43 @@ def test_harvest_rejects_unsafe_metadata_urls():
         adapter.harvest()
 
 
+def test_harvest_builds_dspace_bitstream_links_from_xoai_bundles():
+    payload = b"""<OAI-PMH><ListRecords><record>
+      <header><identifier>oai:dspace.bcucluj.ro:123</identifier></header>
+      <metadata><metadata>
+        <element name="dc"><element name="title"><element name="none">Scan</element></element>
+          <element name="identifier"><element name="uri">https://dspace.bcucluj.ro/handle/12/34</element></element>
+        </element>
+        <element name="bundles"><element name="bundle"><element name="bitstreams">
+          <element name="bitstream"><element name="name">scan.pdf</element>
+            <element name="sequence_id">2</element><element name="checksum">pdf-hash</element>
+          </element>
+          <element name="bitstream"><element name="name">scan.txt</element>
+            <element name="sequence_id">3</element>
+          </element>
+        </element></element></element>
+      </metadata></metadata>
+    </record></ListRecords></OAI-PMH>"""
+    adapter = OaiPmhAdapter(
+        "https://dspace.bcucluj.ro/server/oai/request",
+        "bcucluj",
+        metadata_prefix="xoai",
+        source_host="dspace.bcucluj.ro",
+        http_client=FakeHttp([payload]),
+    )
+
+    record = adapter.harvest()[0]
+
+    assert record.title == "Scan"
+    assert record.pdf_url == (
+        "https://dspace.bcucluj.ro/bitstream/handle/12/34/scan.pdf?sequence=2&isAllowed=y"
+    )
+    assert record.text_url == (
+        "https://dspace.bcucluj.ro/bitstream/handle/12/34/scan.txt?sequence=3&isAllowed=y"
+    )
+    assert record.checksum == "pdf-hash"
+
+
 def test_xml_parser_rejects_dtd_and_entities():
     with pytest.raises(ArchiveSourceError, match="DTD or entity"):
         _parse_xml(b'<!DOCTYPE x [<!ENTITY secret "boom">]><x>&secret;</x>')

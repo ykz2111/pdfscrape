@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import xml.etree.ElementTree as ET
 from collections import defaultdict
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, quote, urlencode, urljoin, urlsplit, urlunsplit
 
 from pdfscrape.archive.http import ArchiveHttpClient, ArchiveSourceError
 from pdfscrape.archive.models import ArchiveRecord
@@ -128,7 +128,8 @@ class OaiPmhAdapter:
 
 
 def _parse_xml(payload: bytes) -> ET.Element:
-    if re.search(rb"<!\s*(DOCTYPE|ENTITY)\b", payload, flags=re.IGNORECASE):
+    normalized = payload.replace(b"\x00", b"").upper()
+    if re.search(rb"<!\s*(DOCTYPE|ENTITY)\b", normalized):
         raise ArchiveSourceError("OAI-PMH response contains a forbidden DTD or entity declaration")
     try:
         return ET.fromstring(payload)
@@ -177,6 +178,34 @@ def _record_from_metadata(
         except UrlPolicyError as exc:
             raise ArchiveSourceError(
                 f"unsafe document URL in OAI record {identifier!r}: {exc}"
+            ) from exc
+        if public_url not in seen_urls:
+            seen_urls.add(public_url)
+            public_urls.append(public_url)
+
+    bitstreams = _xoai_bitstreams(metadata) if metadata is not None else []
+    source_base = _source_base_url(source_host)
+    handle = next(
+        (value for value in (_dspace_handle(url) for url in public_urls) if value),
+        None,
+    )
+    for bitstream in bitstreams:
+        raw_url = bitstream.get("url")
+        if raw_url and raw_url.startswith("/") and source_base:
+            raw_url = urljoin(source_base, raw_url)
+        if not raw_url and bitstream.get("name") and handle and source_base:
+            query = urlencode({"sequence": bitstream.get("sequence", "1"), "isAllowed": "y"})
+            raw_url = (
+                f"{source_base}/bitstream/handle/{quote(handle, safe='/')}/"
+                f"{quote(bitstream['name'], safe='')}?{query}"
+            )
+        if not raw_url:
+            continue
+        try:
+            public_url = canonicalize_public_url(raw_url, source_host=source_host)
+        except UrlPolicyError as exc:
+            raise ArchiveSourceError(
+                f"unsafe bitstream URL in OAI record {identifier!r}: {exc}"
             ) from exc
         if public_url not in seen_urls:
             seen_urls.add(public_url)
@@ -240,6 +269,57 @@ def _collect_metadata(root: ET.Element, values: dict[str, list[str]]) -> None:
             visit(child, path if name else ancestors)
 
     visit(root, [])
+
+
+def _xoai_bitstreams(root: ET.Element) -> list[dict[str, str]]:
+    """Extract bitstream names, direct links, sequence numbers, and checksums."""
+    bitstreams = []
+    link_names = {"url", "uri", "href", "downloadurl", "retrievelink", "link"}
+    for node in root.iter():
+        if (
+            _local_name(node.tag).lower() != "element"
+            or node.attrib.get("name", "").lower() != "bitstream"
+        ):
+            continue
+        details: dict[str, str] = {}
+        for child in node.iter():
+            key = child.attrib.get("name", _local_name(child.tag)).lower().replace("_", "")
+            text = " ".join((child.text or "").split())
+            if not text:
+                continue
+            if key == "name" and "name" not in details:
+                details["name"] = text
+            elif key in {"sequenceid", "sequence"} and "sequence" not in details:
+                details["sequence"] = text
+            elif key in link_names and "url" not in details:
+                details["url"] = text
+            elif key in {"checksum", "md5", "sha1"} and "checksum" not in details:
+                details["checksum"] = text
+        if details:
+            bitstreams.append(details)
+    return bitstreams
+
+
+def _source_base_url(source_host: str | None) -> str | None:
+    if not source_host:
+        return None
+    value = source_host.strip()
+    if "://" not in value:
+        value = f"https://{value}"
+    return canonicalize_public_url(value).rstrip("/")
+
+
+def _dspace_handle(url: str) -> str | None:
+    path = urlsplit(url).path
+    if "/bitstream/" in path:
+        return None
+    segments = [segment for segment in path.split("/") if segment]
+    try:
+        index = segments.index("handle")
+    except ValueError:
+        return None
+    handle = "/".join(segments[index + 1 :])
+    return handle or None
 
 
 def _extract_urls(value: str) -> list[str]:

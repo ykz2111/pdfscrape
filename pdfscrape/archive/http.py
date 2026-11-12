@@ -75,7 +75,8 @@ class ArchiveHttpClient:
                     raise ArchiveSourceError(
                         f"archive source returned HTTP {exc.code} for {safe_url}"
                     ) from exc
-                delay = _retry_after_seconds(exc.headers.get("Retry-After"))
+                retry_after = exc.headers.get("Retry-After") if exc.headers else None
+                delay = _retry_after_seconds(retry_after)
                 self._sleep(delay if delay is not None else min(2**attempt, 30))
             except urllib.error.URLError as exc:
                 if attempt >= self.max_retries:
