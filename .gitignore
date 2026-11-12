@@ -3,8 +3,8 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
-build/
-dist/
+/build/
+/dist/
 .venv/
 venv/
 .env
@@ -15,12 +15,7 @@ venv/
 .DS_Store
 GIT-PDF/
 
-# Agent skill directories and lockfiles created by tooling in the workspace.
-.agents/
-.claude/
-skills-lock.json
-
-# Node artifacts from npx-installed MCP servers.
+# Node artifacts at repo root.
 node_modules/
-package.json
-package-lock.json
+/package.json
+/package-lock.json
