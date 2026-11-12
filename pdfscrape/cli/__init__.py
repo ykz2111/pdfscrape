@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import click
 
-from pdfscrape.cli.commands import chat, init, login, providers, terminal
+from pdfscrape.cli.commands import archive, chat, init, login, providers, terminal
 
 
 @click.group()
@@ -18,6 +18,7 @@ def main() -> None:
     pass
 
 
+main.add_command(archive)
 main.add_command(init)
 main.add_command(chat)
 main.add_command(login)

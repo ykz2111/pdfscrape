@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" data-density="comfortable" data-contrast="parchment">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><!--SITE_TITLE--></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to catalog results</a>
+
+  <header class="masthead">
+    <div class="container">
+      <div class="masthead-row">
+        <div>
+          <p class="masthead-kicker">Open-Access Archival Index</p>
+          <h1 class="masthead-title"><!--SITE_TITLE--></h1>
+          <p class="masthead-subtitle">
+            Key-free index of historical Romanian digitized monographs, periodicals, and manuscripts.
+            Every link is canonicalized to public HTTPS before handoff to GitHub Copilot in Safari.
+          </p>
+        </div>
+
+        <div class="masthead-actions">
+          <div class="tweaks-wrap">
+            <button
+              id="tweaks-toggle"
+              type="button"
+              class="btn btn-secondary"
+              aria-expanded="false"
+              aria-controls="tweaks-panel"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="4" y1="21" x2="4" y2="14"></line>
+                <line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line>
+                <line x1="20" y1="12" x2="20" y2="3"></line>
+                <line x1="1" y1="14" x2="7" y2="14"></line>
+                <line x1="9" y1="8" x2="15" y2="8"></line>
+                <line x1="17" y1="16" x2="23" y2="16"></line>
+              </svg>
+              <span>Tweaks</span>
+            </button>
+
+            <div id="tweaks-panel" class="tweaks-panel" hidden>
+              <h2 class="tweaks-title">Display Preferences</h2>
+              <div class="tweak-group">
+                <span class="tweak-label">Density</span>
+                <div class="tweak-segmented" role="group" aria-label="Row density">
+                  <button type="button" data-tweak-key="density" data-tweak-val="comfortable" aria-pressed="true">Comfortable</button>
+                  <button type="button" data-tweak-key="density" data-tweak-val="compact" aria-pressed="false">Compact</button>
+                </div>
+              </div>
+              <div class="tweak-group">
+                <span class="tweak-label">Surface Contrast</span>
+                <div class="tweak-segmented" role="group" aria-label="Surface contrast">
+                  <button type="button" data-tweak-key="contrast" data-tweak-val="parchment" aria-pressed="true">Parchment</button>
+                  <button type="button" data-tweak-key="contrast" data-tweak-val="high" aria-pressed="false">High Paper</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="masthead-meta">
+        <span class="meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          Documents: <strong id="meta-count" class="tabular">0</strong>
+        </span>
+        <span class="meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+          </svg>
+          Repositories: <strong id="meta-sources" class="tabular">0</strong>
+        </span>
+        <span class="meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          Catalog built: <strong id="meta-built" class="tabular">-</strong>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <section class="toolbar-wrap" aria-label="Search and filter catalog">
+    <div class="container">
+      <form class="toolbar" onsubmit="return false;">
+        <div class="search-field">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </span>
+          <label class="sr-only" for="search-input">Search titles, authors, periods, or excerpts</label>
+          <input
+            id="search-input"
+            class="search-input"
+            type="search"
+            placeholder="Search titles, authors, years, or text (diacritic-insensitive)..."
+            autocomplete="off"
+          >
+          <span class="search-kbd" aria-hidden="true">/</span>
+        </div>
+
+        <div>
+          <label class="sr-only" for="filter-source">Filter by repository</label>
+          <select id="filter-source" class="filter-select">
+            <option value="">All sources</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="sr-only" for="filter-period">Filter by historical period</label>
+          <select id="filter-period" class="filter-select">
+            <option value="">All periods</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="sr-only" for="filter-language">Filter by language</label>
+          <select id="filter-language" class="filter-select">
+            <option value="">All languages</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="sr-only" for="filter-sort">Sort order</label>
+          <select id="filter-sort" class="filter-select">
+            <option value="year-asc">Year (oldest first)</option>
+            <option value="year-desc">Year (newest first)</option>
+            <option value="title-asc">Title (A–Z)</option>
+          </select>
+        </div>
+
+        <button id="reset-filters" type="button" class="btn btn-secondary">Clear</button>
+      </form>
+    </div>
+  </section>
+
+  <main id="main-content" class="main-content">
+    <div class="container">
+      <div id="alert-banner" class="alert-banner" role="alert" hidden>
+        <span id="alert-text"></span>
+        <button id="alert-dismiss" type="button" class="btn btn-secondary">Dismiss</button>
+      </div>
+
+      <div class="results-header">
+        <p id="results-status" class="results-status" aria-live="polite">Loading catalog...</p>
+        <span class="security-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <polyline points="9 12 11 14 15 10"></polyline>
+          </svg>
+          Public HTTPS Guard Active
+        </span>
+      </div>
+
+      <div id="loading-state" class="state-card">
+        <h2>Loading archival catalog</h2>
+        <p>Reading static index metadata and verifying public HTTPS handoff links.</p>
+      </div>
+
+      <div id="error-state" class="state-card" hidden>
+        <h2>Catalog unavailable</h2>
+        <p id="error-message">Unable to load catalog data.</p>
+        <button id="retry-load" type="button" class="btn btn-primary">Retry</button>
+      </div>
+
+      <div id="empty-state" class="state-card" hidden>
+        <h2>No matching documents</h2>
+        <p>Try removing a facet filter or searching without Romanian diacritics.</p>
+        <button id="empty-reset" type="button" class="btn btn-secondary">Reset filters</button>
+      </div>
+
+      <ul id="record-list" class="record-list" aria-label="Catalog documents"></ul>
+
+      <nav id="pagination" class="pagination" aria-label="Pagination" hidden>
+        <button id="prev-page" type="button" class="btn btn-secondary">Previous</button>
+        <span id="page-info" class="results-status tabular">Page 1 of 1</span>
+        <button id="next-page" type="button" class="btn btn-secondary">Next</button>
+      </nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-row">
+      <span>Built with <code>pdfscrape archive build-site</code> — zero API keys, open protocols only.</span>
+      <span>Handoff target: <code>https://github.com/copilot</code></span>
+    </div>
+  </footer>
+
+  <div id="drawer-backdrop" class="drawer-backdrop" hidden></div>
+  <aside
+    id="inspector-drawer"
+    class="inspector-drawer"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="drawer-title"
+    hidden
+  >
+    <div class="drawer-header">
+      <p class="drawer-kicker">Document Inspector</p>
+      <button id="drawer-close" type="button" class="btn btn-ghost" aria-label="Close document inspector">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        <span>Close</span>
+      </button>
+    </div>
+    <div id="drawer-body" class="drawer-body"></div>
+    <div id="drawer-footer" class="drawer-footer"></div>
+  </aside>
+</body>
+</html>
