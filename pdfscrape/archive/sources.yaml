@@ -1,0 +1,21 @@
+sources:
+  bcucluj:
+    adapter: oai
+    enabled: true
+    endpoint: https://dspace.bcucluj.ro/server/oai/request
+    metadata_prefix: xoai
+    source_host: dspace.bcucluj.ro
+  internet_archive:
+    adapter: internet_archive
+    enabled: true
+    query: "language:rum AND mediatype:texts"
+  gallica:
+    adapter: gallica_iiif
+    enabled: false
+    # Gallica records are supplied as public IIIF Presentation manifest URLs.
+  bcu_iasi:
+    adapter: oai
+    enabled: false
+    endpoint: https://dspace.bcu-iasi.ro/server/oai/request
+    metadata_prefix: xoai
+    source_host: dspace.bcu-iasi.ro

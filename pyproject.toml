@@ -27,7 +27,17 @@ pdfscrape-terminal = "pdfscrape.terminal:run_terminal"
 pdfscrape-mac = "pdfscrape.mac:main"
 
 [tool.setuptools]
-packages = ["pdfscrape", "pdfscrape.cli", "pdfscrape.chat", "pdfscrape.config", "pdfscrape.providers"]
+packages = [
+    "pdfscrape",
+    "pdfscrape.archive",
+    "pdfscrape.cli",
+    "pdfscrape.chat",
+    "pdfscrape.config",
+    "pdfscrape.providers",
+]
+
+[tool.setuptools.package-data]
+"pdfscrape.archive" = ["sources.yaml", "assets/*", "DESIGN.md"]
 
 [tool.ruff]
 line-length = 100

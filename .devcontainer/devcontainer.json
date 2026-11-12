@@ -1,0 +1,25 @@
+{
+  "name": "pdfscrape archive",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
+    }
+  },
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
+  "postCreateCommand": "python -m venv /home/vscode/.venvs/pdfscrape && /home/vscode/.venvs/pdfscrape/bin/python -m pip install --upgrade pip && /home/vscode/.venvs/pdfscrape/bin/python -m pip install -e '.[dev]'",
+  "remoteEnv": {
+    "PATH": "/home/vscode/.venvs/pdfscrape/bin:${containerEnv:PATH}"
+  },
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "Archive preview",
+      "onAutoForward": "notify"
+    }
+  }
+}

@@ -175,6 +175,68 @@ pdfscrape/
 .venv/bin/python -m pytest tests/ -q
 ```
 
+### Archive development container (Phase 4)
+
+Open the repository in a Dev Containers-compatible editor and choose **Reopen
+in Container**. `.devcontainer/` supplies Python 3.11, Node 24/npm, Poppler, and
+Tesseract with Romanian (`ron`) and English (`eng`) language data. Creation
+installs the project and dev dependencies into `/home/vscode/.venvs/pdfscrape`
+(on `PATH`), separate from any macOS `.venv` in the mounted checkout. No provider
+credentials or home-directory auth stores are mounted. Python 3.9 remains the package minimum.
+The base image and Debian packages track their upstream updates, not an immutable
+dependency snapshot; rebuild the container to receive those updates.
+
+Verify the tools inside the container:
+
+```bash
+pdfscrape --help
+python --version
+node --version
+pdftotext -v
+tesseract --list-langs
+```
+
+### Archive Pages publishing (Phase 4)
+
+`.github/workflows/archive-pages.yml` runs every Monday at 04:23 UTC or manually
+via **Actions → Archive Pages → Run workflow**, on the default branch only.
+In **Settings → Pages → Build and deployment**, select **GitHub Actions**.
+Keep the `github-pages` environment restricted to the default branch and enable
+required reviewers there if publications need approval. No custom secrets or
+provider sign-ins are needed; GitHub supplies the short-lived deployment token.
+
+**Prerequisite:** Phases 1–3 are not present in this checkout. The workflow
+deliberately fails at preflight until the archive CLI and `config/sources.yaml`
+exist. This phase does not implement harvesting, URL policy, or the static UI.
+The integration contract for those commands is:
+
+```bash
+pdfscrape archive harvest --output build/catalog.jsonl
+pdfscrape archive validate --input build/catalog.jsonl
+pdfscrape archive build-site --input build/catalog.jsonl --output dist/archive
+pdfscrape archive validate --input dist/archive/catalog.json
+```
+
+`harvest` must default to public sources only, with AI enrichment disabled;
+`validate` must accept JSONL and the exported JSON array and exit nonzero on any
+unsafe document or Copilot URL (including loopback/private addresses).
+`build-site` must support a Pages project subpath using relative asset links.
+Both source and exported records must pass validation before deployment.
+An empty catalog or missing `index.html` also blocks publication, leaving the
+previous site in place. Only `dist/archive/` is uploaded; raw data, credentials,
+and SQLite databases do not belong in that directory. Build outputs are already
+gitignored. Scheduled failures are visible in Actions; there is no success fallback.
+
+Once Phases 1–3 are installed, run the same commands locally and preview with:
+
+```bash
+python -m http.server 8000 --directory dist/archive --bind 0.0.0.0
+```
+
+Port 8000 is forwarded by the container for local preview only; never publish
+that preview address as a document or Copilot URL. Deployment itself requires
+the repository's GitHub Pages feature and cannot be tested by a local build.
+
 ## License
 
 MIT
