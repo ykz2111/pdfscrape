@@ -14,3 +14,13 @@ venv/
 .mypy_cache/
 .DS_Store
 GIT-PDF/
+
+# Agent skill directories and lockfiles created by tooling in the workspace.
+.agents/
+.claude/
+skills-lock.json
+
+# Node artifacts from npx-installed MCP servers.
+node_modules/
+package.json
+package-lock.json
