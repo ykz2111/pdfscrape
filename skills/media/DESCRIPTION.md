@@ -1,3 +1,3 @@
 ---
-description: Skills for working with media content — YouTube transcripts and summaries.
+description: Optional media skills — GIF search and audio visualization.
 ---
